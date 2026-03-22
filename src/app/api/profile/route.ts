@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getProfile, requireRoleResponse } from '@/lib/auth'
+import { getProfile } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -12,7 +12,7 @@ const UpdateProfileSchema = z.object({
   avatarUrl: z.string().url().optional(),
 })
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const profile = await getProfile()
 
   if (!profile) {

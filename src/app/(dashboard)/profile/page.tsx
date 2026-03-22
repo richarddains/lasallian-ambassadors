@@ -1,17 +1,12 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { getProfile } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import Image from 'next/image'
-
-type Profile = Awaited<ReturnType<typeof getProfile>>
 
 export default function ProfilePage() {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [profile, setProfile] = useState<Profile>(null)
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')

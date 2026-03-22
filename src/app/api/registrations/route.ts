@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { CreateRegistrationSchema } from '@/lib/validations'
 import { z } from 'zod'
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const profile = await getProfile()
 
   if (!profile) {

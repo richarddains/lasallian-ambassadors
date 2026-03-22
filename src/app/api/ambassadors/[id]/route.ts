@@ -3,7 +3,7 @@ import { getProfile } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
