@@ -1,8 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+
+interface FormData {
+  title: string
+  description: string
+  location: string
+  startTime: string
+  endTime: string
+  lambSlots: string
+  docuLambSlots: string
+  aicId: string
+  attire: string
+}
 
 interface AIC {
   id: string
@@ -10,12 +22,18 @@ interface AIC {
   lastName: string
 }
 
-export default function CreateEventPage() {
+function toDatetimeLocal(iso: string) {
+  return iso ? new Date(iso).toISOString().slice(0, 16) : ''
+}
+
+export default function EditEventPage() {
+  const params = useParams()
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [aicList, setAicList] = useState<AIC[]>([])
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
     location: '',
@@ -28,11 +46,34 @@ export default function CreateEventPage() {
   })
 
   useEffect(() => {
-    fetch('/api/ambassadors?order=ASPIRING_CORE')
-      .then((r) => r.json())
-      .then(setAicList)
-      .catch(() => {})
-  }, [])
+    const fetchEvent = async () => {
+      try {
+        const [eventRes, aicRes] = await Promise.all([
+          fetch(`/api/events/${params.id}`),
+          fetch('/api/ambassadors?order=ASPIRING_CORE'),
+        ])
+        const [data, aics] = await Promise.all([eventRes.json(), aicRes.json()])
+        setAicList(aics)
+        setFormData({
+          title: data.title,
+          description: data.description,
+          location: data.location,
+          startTime: toDatetimeLocal(data.startTime),
+          endTime: toDatetimeLocal(data.endTime),
+          lambSlots: data.lambSlots?.toString() ?? '',
+          docuLambSlots: data.docuLambSlots?.toString() ?? '',
+          aicId: data.aicId ?? '',
+          attire: data.attire ?? '',
+        })
+      } catch {
+        setError('Failed to load event')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    if (params.id) fetchEvent()
+  }, [params.id])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -47,12 +88,12 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSaving(true)
     setError('')
 
     try {
-      const response = await fetch('/api/events', {
-        method: 'POST',
+      const res = await fetch(`/api/events/${params.id}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
@@ -65,37 +106,47 @@ export default function CreateEventPage() {
         }),
       })
 
-      if (!response.ok) {
-        const data = await response.json()
-        setError(data.error || 'Failed to create event')
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Failed to update event')
         return
       }
 
-      const event = await response.json()
-      router.push(`/events/${event.id}`)
-    } catch (err) {
+      router.push(`/events/${params.id}`)
+    } catch {
       setError('An error occurred')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="text-center">
+          <span className="material-symbols-outlined text-4xl text-outline-variant block mb-3">hourglass_empty</span>
+          <p className="font-body italic text-on-surface-variant">Loading event...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="max-w-2xl">
       <Link
-        href="/events"
+        href={`/events/${params.id}`}
         className="inline-flex items-center gap-1.5 font-label font-bold text-sm text-on-surface-variant hover:text-primary uppercase tracking-widest transition-colors mb-6"
       >
         <span className="material-symbols-outlined text-base">arrow_back</span>
-        Back to Events
+        Back to Event
       </Link>
 
       <div className="bg-surface-container-lowest rounded-xl editorial-shadow p-8">
         <span className="font-label font-bold text-primary tracking-widest uppercase text-xs block mb-3">
-          New Event
+          Editing
         </span>
         <h1 className="font-headline font-extrabold text-3xl text-on-surface tracking-tighter mb-8">
-          Create Event
+          Edit Event
         </h1>
 
         {error && (
@@ -123,7 +174,6 @@ export default function CreateEventPage() {
                   value={formData.title}
                   onChange={handleChange}
                   className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
-                  placeholder="Event name"
                   required
                 />
               </div>
@@ -137,7 +187,6 @@ export default function CreateEventPage() {
                   onChange={handleChange}
                   rows={4}
                   className="bg-surface-container-low border-none rounded-xl p-4 font-body text-base text-on-surface focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-outline/40 resize-none"
-                  placeholder="Describe the event..."
                   required
                 />
               </div>
@@ -151,7 +200,6 @@ export default function CreateEventPage() {
                   value={formData.location}
                   onChange={handleChange}
                   className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
-                  placeholder="Venue or address"
                   required
                 />
               </div>
@@ -274,10 +322,10 @@ export default function CreateEventPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={saving}
             className="w-full bg-primary text-on-primary py-3 rounded-lg font-headline font-bold uppercase tracking-tight text-sm hover:opacity-90 disabled:opacity-50 transition-all"
           >
-            {loading ? 'Creating...' : 'Create Event'}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </form>
       </div>

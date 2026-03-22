@@ -20,7 +20,7 @@ export default function AmbassadorsManagementPage() {
       try {
         const response = await fetch('/api/admin/ambassadors')
         const data = await response.json()
-        setAmbassadors(data)
+        setAmbassadors(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch ambassadors')
       } finally {
@@ -124,10 +124,9 @@ export default function AmbassadorsManagementPage() {
                       }
                       className="px-2 py-1 border border-gray-300 rounded text-sm"
                     >
-                      <option>AMBASSADOR</option>
-                      <option>COORDINATOR</option>
-                      <option>LEAD</option>
-                      <option>ADMIN</option>
+                      <option value="AMBASSADOR">Lasallian Ambassador</option>
+                      <option value="ASPIRING_CORE">Aspiring Core</option>
+                      <option value="CORE">Core</option>
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">

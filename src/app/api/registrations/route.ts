@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getProfile } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { CreateRegistrationSchema } from '@/lib/validations'
+import { z } from 'zod'
 
 export async function GET(request: NextRequest) {
   const profile = await getProfile()
@@ -21,6 +23,7 @@ export async function GET(request: NextRequest) {
             title: true,
             startTime: true,
             location: true,
+            status: true,
           },
         },
       },
@@ -46,7 +49,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { eventId } = await request.json()
+    const body = await request.json()
+    const { eventId, volunteerType } = CreateRegistrationSchema.parse(body)
 
     // Check for duplicate registration
     const existing = await prisma.eventRegistration.findUnique({
@@ -88,11 +92,15 @@ export async function POST(request: NextRequest) {
         eventId,
         profileId: profile.id,
         status,
+        volunteerType,
       },
     })
 
     return NextResponse.json(registration, { status: 201 })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+    }
     return NextResponse.json(
       { error: 'Failed to create registration' },
       { status: 500 }

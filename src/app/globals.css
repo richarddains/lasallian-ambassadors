@@ -2,14 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  @apply border-border;
-}
-
 html {
   scroll-behavior: smooth;
 }
 
 body {
-  @apply bg-background text-foreground;
+  font-family: 'Manrope', sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+}
+
+.editorial-shadow {
+  box-shadow: 0 24px 40px rgba(26, 28, 28, 0.06);
+}
+
+.ghost-border {
+  border-bottom: 1px solid rgba(190, 202, 189, 0.4);
+}
+
+.focus-border:focus {
+  border-bottom: 2px solid #00552c;
+  outline: none;
 }

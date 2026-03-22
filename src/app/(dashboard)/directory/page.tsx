@@ -86,10 +86,9 @@ export default function DirectoryPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">All Roles</option>
-              <option value="AMBASSADOR">Ambassador</option>
-              <option value="COORDINATOR">Coordinator</option>
-              <option value="LEAD">Lead</option>
-              <option value="ADMIN">Admin</option>
+              <option value="AMBASSADOR">Lasallian Ambassador</option>
+              <option value="ASPIRING_CORE">Aspiring Core</option>
+              <option value="CORE">Core</option>
             </select>
           </div>
         </div>

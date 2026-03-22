@@ -13,9 +13,8 @@ datasource db {
 
 enum Role {
   AMBASSADOR
-  COORDINATOR
-  LEAD
-  ADMIN
+  ASPIRING_CORE
+  CORE
 }
 
 enum Order {
@@ -39,10 +38,22 @@ enum RegistrationStatus {
   WAITLISTED
 }
 
+enum VolunteerType {
+  LAMB
+  DOCULAMB
+}
+
 enum TaskStatus {
   OPEN
   ASSIGNED
   COMPLETED
+}
+
+enum Attire {
+  DAY1_UNIFORM
+  DAY2_UNIFORM
+  USHERING_ATTIRE
+  GAWAD_LASALYANO
 }
 
 // User profile linked to Supabase Auth user
@@ -64,7 +75,8 @@ model Profile {
 
   registrations     EventRegistration[]
   assignedTasks     Task[]
-  createdEvents     Event[]
+  createdEvents     Event[]   @relation("EventCreatedBy")
+  aicEvents         Event[]   @relation("EventAIC")
 
   @@index([userId])
   @@index([email])
@@ -80,11 +92,16 @@ model Event {
   startTime         DateTime
   endTime           DateTime
   bannerUrl         String?
-  slots             Int?      // null = unlimited slots
+  slots             Int?      // null = unlimited slots (total)
+  lambSlots         Int?      // null = unlimited
+  docuLambSlots     Int?      // null = unlimited
   status            EventStatus @default(DRAFT)
   requiresApproval  Boolean   @default(false)
+  attire            Attire?
   createdById       String
-  createdBy         Profile   @relation(fields: [createdById], references: [id])
+  createdBy         Profile   @relation("EventCreatedBy", fields: [createdById], references: [id])
+  aicId             String?
+  aic               Profile?  @relation("EventAIC", fields: [aicId], references: [id])
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -94,6 +111,7 @@ model Event {
 
   @@index([status])
   @@index([createdById])
+  @@index([aicId])
   @@index([startTime])
 }
 
@@ -105,9 +123,12 @@ model EventRegistration {
   profileId         String
   profile           Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
   status            RegistrationStatus @default(PENDING)
+  volunteerType     VolunteerType
   registeredAt      DateTime  @default(now())
   approvedAt        DateTime?
   rejectionReason   String?
+  cancellationReason          String?
+  cancellationRequestedAt     DateTime?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

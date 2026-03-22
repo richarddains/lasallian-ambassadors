@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Only LEAD+ can assign tasks
-  const roleCheck = await requireRoleResponse(['LEAD', 'ADMIN'])
+  const roleCheck = await requireRoleResponse(['ASPIRING_CORE', 'CORE'])
   if (roleCheck) return roleCheck
 
   try {

@@ -3,39 +3,31 @@ import { requireRoleResponse } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
-  const roleCheck = await requireRoleResponse(['COORDINATOR', 'LEAD', 'ADMIN'])
+  const roleCheck = await requireRoleResponse(['ASPIRING_CORE', 'CORE'])
   if (roleCheck) return roleCheck
+
+  const { searchParams } = new URL(request.url)
+  const eventId = searchParams.get('eventId')
 
   try {
     const registrations = await prisma.eventRegistration.findMany({
-      where: {
-        status: 'PENDING',
-      },
+      where: eventId ? { eventId } : undefined,
       include: {
         profile: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
+          select: { id: true, firstName: true, lastName: true, email: true },
         },
         event: {
-          select: {
-            title: true,
-            startTime: true,
-          },
+          select: { id: true, title: true, startTime: true },
         },
       },
-      orderBy: {
-        registeredAt: 'asc',
-      },
+      orderBy: [
+        { cancellationRequestedAt: 'desc' },
+        { registeredAt: 'asc' },
+      ],
     })
 
     return NextResponse.json(registrations)
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch registrations' },
-      { status: 500 }
-    )
+  } catch {
+    return NextResponse.json({ error: 'Failed to fetch registrations' }, { status: 500 })
   }
 }

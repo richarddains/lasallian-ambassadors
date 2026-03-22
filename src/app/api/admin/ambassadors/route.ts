@@ -3,7 +3,7 @@ import { requireRoleResponse } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
-  const roleCheck = await requireRoleResponse(['COORDINATOR', 'LEAD', 'ADMIN'])
+  const roleCheck = await requireRoleResponse(['CORE'])
   if (roleCheck) return roleCheck
 
   try {

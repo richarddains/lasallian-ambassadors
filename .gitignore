@@ -34,5 +34,7 @@ lerna-debug.log*
 *.swp
 *.swo
 
-# Prisma
-prisma/migrations
+# Claude / agents
+.agents/
+.claude/
+skills-lock.json

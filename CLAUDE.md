@@ -173,6 +173,24 @@ return NextResponse.json(
 - [ ] Mobile responsiveness polish
 - [ ] Vercel deployment
 
+## Supabase Storage Setup
+
+### Avatar Uploads
+The `avatars` bucket must exist in Supabase Storage and be set to **Public**. Without this, all uploads silently fail with a storage error.
+
+Required RLS policies (run in Supabase SQL Editor):
+```sql
+CREATE POLICY "Allow authenticated uploads"
+ON storage.objects FOR INSERT
+TO authenticated
+WITH CHECK (bucket_id = 'avatars');
+
+CREATE POLICY "Allow public reads"
+ON storage.objects FOR SELECT
+TO public
+USING (bucket_id = 'avatars');
+```
+
 ## Important Gotchas
 
 1. **Prisma Singleton** - Required in dev to avoid pool exhaustion

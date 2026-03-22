@@ -39,7 +39,29 @@ export default function RegisterPage() {
         return
       }
 
-      // User created, will be redirected or should complete profile
+      if (!data.user) {
+        setError('Registration failed. Please try again.')
+        return
+      }
+
+      // Create the Profile row in the database
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: data.user.id,
+          email: formData.email,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+        }),
+      })
+
+      if (!res.ok) {
+        const json = await res.json()
+        setError(json.error || 'Failed to create profile.')
+        return
+      }
+
       router.push('/dashboard')
     } catch (err) {
       setError('An error occurred. Please try again.')
@@ -50,26 +72,37 @@ export default function RegisterPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Account</h1>
+    <div className="bg-surface-container-lowest editorial-shadow rounded-xl p-10">
+      <span className="font-label font-bold text-primary tracking-widest uppercase text-xs block mb-3">
+        Candidate Intake
+      </span>
+      <h1 className="font-headline font-extrabold text-4xl text-on-surface tracking-tighter mb-2">
+        Join the ranks.
+      </h1>
+      <p className="font-body italic text-on-surface-variant mb-8">
+        Create your ambassador portal account.
+      </p>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded mb-6">
+        <div className="bg-error-container border border-error/20 text-on-error-container px-4 py-3 rounded-lg mb-6 font-label text-sm">
           {error}
         </div>
       )}
 
-      <form onSubmit={handleRegister} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+      <form onSubmit={handleRegister} className="space-y-8">
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-primary font-headline font-extrabold text-sm tracking-widest uppercase">01</span>
+          <h2 className="font-headline font-bold text-lg tracking-tight">Personal Information</h2>
+          <div className="h-px flex-grow bg-outline-variant/30"></div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-6">
+          <div className="flex flex-col">
+            <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
               First Name
             </label>
             <input
@@ -77,12 +110,13 @@ export default function RegisterPage() {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
+              placeholder="Juan"
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+          <div className="flex flex-col">
+            <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
               Last Name
             </label>
             <input
@@ -90,28 +124,36 @@ export default function RegisterPage() {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
+              placeholder="Dela Cruz"
               required
             />
           </div>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Email
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-primary font-headline font-extrabold text-sm tracking-widest uppercase">02</span>
+          <h2 className="font-headline font-bold text-lg tracking-tight">Credentials</h2>
+          <div className="h-px flex-grow bg-outline-variant/30"></div>
+        </div>
+
+        <div className="flex flex-col">
+          <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
+            Email Address
           </label>
           <input
             type="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
+            placeholder="you@dlsu.edu.ph"
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+        <div className="flex flex-col">
+          <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
             Password
           </label>
           <input
@@ -119,7 +161,8 @@ export default function RegisterPage() {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-lg text-on-surface placeholder:text-outline/40"
+            placeholder="••••••••"
             required
           />
         </div>
@@ -127,18 +170,20 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 transition"
+          className="w-full bg-primary text-on-primary py-3 rounded-lg font-headline font-bold uppercase tracking-tight text-sm hover:opacity-90 disabled:opacity-50 transition-all"
         >
           {loading ? 'Creating account...' : 'Create Account'}
         </button>
       </form>
 
-      <p className="text-center text-gray-600 mt-6">
-        Already have an account?{' '}
-        <Link href="/login" className="text-blue-600 hover:underline">
-          Sign In
-        </Link>
-      </p>
+      <div className="mt-8 pt-6 border-t border-outline-variant/30 text-center">
+        <p className="font-body italic text-on-surface-variant text-sm">
+          Already have an account?{' '}
+          <Link href="/login" className="text-primary font-label font-bold not-italic hover:underline">
+            Sign In
+          </Link>
+        </p>
+      </div>
     </div>
   )
 }

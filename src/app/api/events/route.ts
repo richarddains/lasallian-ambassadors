@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Only COORDINATOR+ can create events
-  const roleCheck = await requireRoleResponse(['COORDINATOR', 'LEAD', 'ADMIN'])
+  const roleCheck = await requireRoleResponse(['ASPIRING_CORE', 'CORE'])
   if (roleCheck) return roleCheck
 
   const profile = await getProfile()

@@ -19,14 +19,21 @@ export const CreateEventSchema = z.object({
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),
   slots: z.number().positive().optional().nullable(),
+  lambSlots: z.number().positive().optional().nullable(),
+  docuLambSlots: z.number().positive().optional().nullable(),
   requiresApproval: z.boolean().default(false),
+  attire: z.enum(['DAY1_UNIFORM', 'DAY2_UNIFORM', 'USHERING_ATTIRE', 'GAWAD_LASALYANO']).optional().nullable(),
+  aicId: z.string().optional().nullable(),
   bannerUrl: z.string().url().optional(),
 })
 
-export const UpdateEventSchema = CreateEventSchema.partial()
+export const UpdateEventSchema = CreateEventSchema.partial().extend({
+  status: z.enum(['DRAFT', 'PUBLISHED', 'CANCELLED', 'COMPLETED']).optional(),
+})
 
 export const CreateRegistrationSchema = z.object({
   eventId: z.string(),
+  volunteerType: z.enum(['LAMB', 'DOCULAMB']),
 })
 
 export const ApproveRegistrationSchema = z.object({

@@ -4,16 +4,17 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const roleCheck = await requireRoleResponse(['COORDINATOR', 'LEAD', 'ADMIN'])
+  const { id } = await params
+  const roleCheck = await requireRoleResponse(['CORE'])
   if (roleCheck) return roleCheck
 
   try {
     const { role, isActive } = await request.json()
 
     const ambassador = await prisma.profile.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(role && { role }),
         ...(typeof isActive !== 'undefined' && { isActive }),
