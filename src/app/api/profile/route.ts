@@ -9,6 +9,7 @@ const UpdateProfileSchema = z.object({
   bio: z.string().optional(),
   batch: z.number().optional().nullable(),
   order: z.enum(['CORE', 'ASPIRING_CORE', 'NON_FIRST_TIMERS', 'FIRST_TIMERS']).optional().nullable(),
+  committee: z.enum(['MARKETING_RELATIONS', 'HUMAN_RESOURCE', 'DOCUMENTATIONS_PUBLICITY', 'OPERATIONS_FINANCE']).optional().nullable(),
   avatarUrl: z.string().url().optional(),
 })
 

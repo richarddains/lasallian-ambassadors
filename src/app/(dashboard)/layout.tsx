@@ -18,13 +18,11 @@ export default async function DashboardLayout({
     { href: '/directory', label: 'Directory', icon: 'people' },
     { href: '/events', label: 'Events', icon: 'event' },
     { href: '/my-registrations', label: 'My Sign-ups', icon: 'how_to_reg' },
-    { href: '/tasks', label: 'Tasks', icon: 'task_alt' },
   ]
 
   const adminLinks = [
-    { href: '/admin/registrations', label: 'Approvals', icon: 'approval' },
+    { href: '/admin/registrations', label: 'Sign-ups', icon: 'approval' },
     { href: '/admin/ambassadors', label: 'Ambassadors', icon: 'manage_accounts' },
-    { href: '/admin/tasks', label: 'Assign Tasks', icon: 'assignment' },
   ]
 
   const isAdmin = ['ASPIRING_CORE', 'CORE'].includes(profile.role)

@@ -231,7 +231,7 @@ export default function SidebarNav({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 px-8 py-8">
+        <main className="flex-1 px-8 py-5">
           {children}
         </main>
       </div>

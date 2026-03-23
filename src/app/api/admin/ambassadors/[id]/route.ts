@@ -7,7 +7,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const roleCheck = await requireRoleResponse(['CORE'])
+  const roleCheck = await requireRoleResponse(['ASPIRING_CORE', 'CORE'])
   if (roleCheck) return roleCheck
 
   try {

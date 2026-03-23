@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { CreateEventSchema } from '@/lib/validations'
 import { z } from 'zod'
 
-export async function GET(_request: NextRequest) {
+export async function GET(request: NextRequest) {
   const profile = await getProfile()
 
   if (!profile) {
@@ -12,15 +12,33 @@ export async function GET(_request: NextRequest) {
   }
 
   try {
+    const { searchParams } = new URL(request.url)
+    const yearParam = searchParams.get('year')
+    const monthParam = searchParams.get('month')
+
+    let dateFilter = {}
+    if (yearParam && monthParam) {
+      const y = parseInt(yearParam)
+      const m = parseInt(monthParam)
+      const startOfMonth = new Date(y, m - 1, 1)
+      const endOfMonth = new Date(y, m, 0, 23, 59, 59)
+      dateFilter = { startTime: { gte: startOfMonth, lte: endOfMonth } }
+    }
+
     const events = await prisma.event.findMany({
       where: {
-        // For coordinators+, show all events. For ambassadors, only show published
-        status:
-          profile.role === 'AMBASSADOR' ? 'PUBLISHED' : undefined,
+        status: profile.role === 'AMBASSADOR' ? 'PUBLISHED' : undefined,
+        ...dateFilter,
       },
       include: {
-        _count: {
-          select: { registrations: true },
+        _count: { select: { registrations: true } },
+        registrations: {
+          where: { status: 'APPROVED' },
+          select: {
+            profile: { select: { id: true, firstName: true, lastName: true, avatarUrl: true } },
+          },
+          take: 3,
+          orderBy: { registeredAt: 'asc' },
         },
       },
       orderBy: {
@@ -31,6 +49,8 @@ export async function GET(_request: NextRequest) {
     const eventsWithCounts = events.map((event) => ({
       ...event,
       registrationsCount: event._count.registrations,
+      registrants: event.registrations.map((r) => r.profile),
+      registrations: undefined,
       _count: undefined,
     }))
 
@@ -67,7 +87,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(event, { status: 201 })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
+      return NextResponse.json({ error: error.errors[0]?.message ?? 'Invalid input' }, { status: 400 })
     }
 
     return NextResponse.json(

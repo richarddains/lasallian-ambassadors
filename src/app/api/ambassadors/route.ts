@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
         email: true,
         batch: true,
         order: true,
+        committee: true,
         role: true,
         avatarUrl: true,
       },

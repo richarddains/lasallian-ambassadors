@@ -32,10 +32,15 @@ enum EventStatus {
 }
 
 enum RegistrationStatus {
-  PENDING
   APPROVED
-  REJECTED
   WAITLISTED
+}
+
+enum EventType {
+  ADMIN_REQUEST
+  LAMB_MODULE
+  LAMB_EVENT
+  MAJOR_EVENT
 }
 
 enum VolunteerType {
@@ -43,17 +48,24 @@ enum VolunteerType {
   DOCULAMB
 }
 
-enum TaskStatus {
-  OPEN
-  ASSIGNED
-  COMPLETED
-}
-
 enum Attire {
   DAY1_UNIFORM
   DAY2_UNIFORM
   USHERING_ATTIRE
   GAWAD_LASALYANO
+}
+
+enum Attendance {
+  PRESENT
+  ABSENT
+  EXCUSED
+}
+
+enum Committee {
+  MARKETING_RELATIONS
+  HUMAN_RESOURCE
+  DOCUMENTATIONS_PUBLICITY
+  OPERATIONS_FINANCE
 }
 
 // User profile linked to Supabase Auth user
@@ -67,6 +79,7 @@ model Profile {
   avatarUrl         String?
   batch             Int? // Year joined (e.g., 2023)
   order             Order? // Core, Aspiring Core, Non-First Timers, First Timers
+  committee         Committee?
   role              Role      @default(AMBASSADOR)
   isActive          Boolean   @default(true)
 
@@ -74,7 +87,6 @@ model Profile {
   updatedAt         DateTime  @updatedAt
 
   registrations     EventRegistration[]
-  assignedTasks     Task[]
   createdEvents     Event[]   @relation("EventCreatedBy")
   aicEvents         Event[]   @relation("EventAIC")
 
@@ -92,11 +104,11 @@ model Event {
   startTime         DateTime
   endTime           DateTime
   bannerUrl         String?
+  eventType         EventType @default(ADMIN_REQUEST)
   slots             Int?      // null = unlimited slots (total)
   lambSlots         Int?      // null = unlimited
   docuLambSlots     Int?      // null = unlimited
   status            EventStatus @default(DRAFT)
-  requiresApproval  Boolean   @default(false)
   attire            Attire?
   createdById       String
   createdBy         Profile   @relation("EventCreatedBy", fields: [createdById], references: [id])
@@ -107,7 +119,6 @@ model Event {
   updatedAt         DateTime  @updatedAt
 
   registrations     EventRegistration[]
-  tasks             Task[]
 
   @@index([status])
   @@index([createdById])
@@ -122,13 +133,14 @@ model EventRegistration {
   event             Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   profileId         String
   profile           Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  status            RegistrationStatus @default(PENDING)
-  volunteerType     VolunteerType
+  status            RegistrationStatus @default(APPROVED)
+  volunteerType     VolunteerType?
   registeredAt      DateTime  @default(now())
   approvedAt        DateTime?
   rejectionReason   String?
   cancellationReason          String?
   cancellationRequestedAt     DateTime?
+  attendance                  Attendance?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -139,22 +151,3 @@ model EventRegistration {
   @@index([profileId])
 }
 
-// Tasks for ambassadors (linked to events or standalone)
-model Task {
-  id                String    @id @default(cuid())
-  title             String
-  description       String
-  eventId           String?   // null if standalone task
-  event             Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  assignedToId      String
-  assignedTo        Profile   @relation(fields: [assignedToId], references: [id])
-  status            TaskStatus @default(OPEN)
-  dueDate           DateTime?
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  @@index([status])
-  @@index([assignedToId])
-  @@index([eventId])
-}

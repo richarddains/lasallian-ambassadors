@@ -9,19 +9,20 @@ export const UpdateProfileSchema = z.object({
     .enum(['CORE', 'ASPIRING_CORE', 'NON_FIRST_TIMERS', 'FIRST_TIMERS'])
     .optional()
     .nullable(),
+  committee: z.enum(['MARKETING_RELATIONS', 'HUMAN_RESOURCE', 'DOCUMENTATIONS_PUBLICITY', 'OPERATIONS_FINANCE']).optional().nullable(),
   avatarUrl: z.string().url().optional(),
 })
 
 export const CreateEventSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  description: z.string().min(10, 'Description is required'),
+  description: z.string().min(1, 'Description is required'),
   location: z.string().min(1, 'Location is required'),
   startTime: z.string().datetime(),
   endTime: z.string().datetime(),
+  eventType: z.enum(['ADMIN_REQUEST', 'LAMB_MODULE', 'LAMB_EVENT', 'MAJOR_EVENT']),
   slots: z.number().positive().optional().nullable(),
   lambSlots: z.number().positive().optional().nullable(),
   docuLambSlots: z.number().positive().optional().nullable(),
-  requiresApproval: z.boolean().default(false),
   attire: z.enum(['DAY1_UNIFORM', 'DAY2_UNIFORM', 'USHERING_ATTIRE', 'GAWAD_LASALYANO']).optional().nullable(),
   aicId: z.string().optional().nullable(),
   bannerUrl: z.string().url().optional(),
@@ -33,25 +34,5 @@ export const UpdateEventSchema = CreateEventSchema.partial().extend({
 
 export const CreateRegistrationSchema = z.object({
   eventId: z.string(),
-  volunteerType: z.enum(['LAMB', 'DOCULAMB']),
-})
-
-export const ApproveRegistrationSchema = z.object({
-  registrationId: z.string(),
-  status: z.enum(['APPROVED', 'REJECTED']),
-  rejectionReason: z.string().optional(),
-})
-
-export const CreateTaskSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
-  assignedToId: z.string(),
-  eventId: z.string().optional().nullable(),
-  dueDate: z.string().datetime().optional().nullable(),
-})
-
-export const UpdateTaskSchema = z.object({
-  status: z.enum(['OPEN', 'ASSIGNED', 'COMPLETED']).optional(),
-  title: z.string().optional(),
-  description: z.string().optional(),
+  volunteerType: z.enum(['LAMB', 'DOCULAMB']).optional(),
 })

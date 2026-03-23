@@ -5,11 +5,19 @@ import Link from 'next/link'
 
 interface Registration {
   id: string
-  volunteerType: string
+  volunteerType: string | null
   registeredAt: string
+  status: string
+  attendance: string | null
   cancellationReason: string | null
   cancellationRequestedAt: string | null
   event: { id: string; title: string; startTime: string; location: string; status: string }
+}
+
+const ATTENDANCE_STYLES: Record<string, { label: string; bg: string; text: string; icon: string }> = {
+  PRESENT:  { label: 'Present',  bg: 'bg-emerald-100', text: 'text-emerald-800', icon: 'check_circle' },
+  ABSENT:   { label: 'Absent',   bg: 'bg-red-100',     text: 'text-red-700',     icon: 'cancel' },
+  EXCUSED:  { label: 'Excused',  bg: 'bg-amber-100',   text: 'text-amber-800',   icon: 'info' },
 }
 
 export default function MyRegistrationsPage() {
@@ -123,21 +131,45 @@ export default function MyRegistrationsPage() {
                           <span className="material-symbols-outlined text-base">calendar_today</span>
                           {new Date(reg.event.startTime).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <span className="material-symbols-outlined text-base">badge</span>
-                          {reg.volunteerType === 'LAMB' ? 'LAmb' : 'DocuLAmb'}
-                        </span>
+                        {reg.volunteerType && (
+                          <span className="flex items-center gap-1.5">
+                            <span className="material-symbols-outlined text-base">badge</span>
+                            {reg.volunteerType === 'LAMB' ? 'LAmb' : 'DocuLAmb'}
+                          </span>
+                        )}
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                      {hasPendingRequest ? (
-                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-error-container text-on-error-container rounded-full font-label text-[10px] font-bold uppercase tracking-widest">
-                          <span className="material-symbols-outlined text-sm">pending_actions</span>
-                          Removal Requested
+                      {/* Waitlist badge */}
+                      {reg.status === 'WAITLISTED' && (
+                        <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-full font-label text-[10px] font-bold uppercase tracking-widest">
+                          <span className="material-symbols-outlined text-sm">schedule</span>
+                          Waitlisted
                         </span>
-                      ) : (
-                        reg.event.status === 'PUBLISHED' && (
+                      )}
+                      {/* Attendance badge for completed events */}
+                      {reg.event.status === 'COMPLETED' && (
+                        reg.attendance ? (
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-label text-[10px] font-bold uppercase tracking-widest ${ATTENDANCE_STYLES[reg.attendance].bg} ${ATTENDANCE_STYLES[reg.attendance].text}`}>
+                            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{ATTENDANCE_STYLES[reg.attendance].icon}</span>
+                            {ATTENDANCE_STYLES[reg.attendance].label}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-400 rounded-full font-label text-[10px] font-bold uppercase tracking-widest">
+                            <span className="material-symbols-outlined text-sm">schedule</span>
+                            Pending Marking
+                          </span>
+                        )
+                      )}
+                      {/* Removal request for published events */}
+                      {reg.event.status === 'PUBLISHED' && reg.status !== 'WAITLISTED' && (
+                        hasPendingRequest ? (
+                          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-error-container text-on-error-container rounded-full font-label text-[10px] font-bold uppercase tracking-widest">
+                            <span className="material-symbols-outlined text-sm">pending_actions</span>
+                            Removal Requested
+                          </span>
+                        ) : (
                           <button
                             onClick={() => openForm(reg.id)}
                             className="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-500 hover:border-error/40 hover:text-red-500 hover:bg-red-50 rounded-full font-label text-[10px] font-bold uppercase tracking-widest transition-colors"

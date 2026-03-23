@@ -3,6 +3,27 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 
+const COMMITTEE_INFO: Record<string, { label: string; bg: string; text: string }> = {
+  MARKETING_RELATIONS: { label: 'MR', bg: 'bg-amber-100', text: 'text-amber-800' },
+  HUMAN_RESOURCE: { label: 'HRMD', bg: 'bg-blue-900', text: 'text-blue-50' },
+  DOCUMENTATIONS_PUBLICITY: { label: 'DP', bg: 'bg-pink-100', text: 'text-pink-700' },
+  OPERATIONS_FINANCE: { label: 'OF', bg: 'bg-purple-100', text: 'text-purple-700' },
+}
+
+const COMMITTEE_FULL: Record<string, string> = {
+  MARKETING_RELATIONS: 'Marketing and Relations',
+  HUMAN_RESOURCE: 'Human Resource Management and Development',
+  DOCUMENTATIONS_PUBLICITY: 'Documentations and Publicity',
+  OPERATIONS_FINANCE: 'Operations and Finance',
+}
+
+const ORDER_LABEL: Record<string, string> = {
+  CORE: 'Core',
+  ASPIRING_CORE: 'Aspiring Core',
+  NON_FIRST_TIMERS: 'Non-First Timers',
+  FIRST_TIMERS: 'First Timers',
+}
+
 interface Ambassador {
   id: string
   firstName: string
@@ -11,6 +32,7 @@ interface Ambassador {
   batch?: number
   order?: string
   role: string
+  committee?: string
 }
 
 export default function DirectoryPage() {
@@ -25,6 +47,7 @@ export default function DirectoryPage() {
   }, [])
 
   const fetchAmbassadors = async () => {
+    setLoading(true)
     try {
       const params = new URLSearchParams()
       if (search) params.append('search', search)
@@ -33,9 +56,9 @@ export default function DirectoryPage() {
 
       const response = await fetch(`/api/ambassadors?${params}`)
       const data = await response.json()
-      setAmbassadors(data)
-    } catch (error) {
-      console.error('Failed to fetch ambassadors')
+      setAmbassadors(Array.isArray(data) ? data : [])
+    } catch {
+      // silent
     } finally {
       setLoading(false)
     }
@@ -43,13 +66,20 @@ export default function DirectoryPage() {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Ambassador Directory</h1>
+      <div className="mb-8">
+        <span className="font-label font-bold text-primary tracking-widest uppercase text-xs block mb-2">
+          People
+        </span>
+        <h1 className="font-headline font-extrabold text-3xl text-on-surface tracking-tighter">
+          Ambassador Directory
+        </h1>
+      </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
+      <div className="bg-surface-container-lowest rounded-xl editorial-shadow p-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="flex flex-col">
+            <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
               Search
             </label>
             <input
@@ -57,17 +87,18 @@ export default function DirectoryPage() {
               placeholder="Name or email..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onKeyDown={(e) => e.key === 'Enter' && fetchAmbassadors()}
+              className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-base text-on-surface placeholder:text-outline/40"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="flex flex-col">
+            <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
               Order
             </label>
             <select
               value={filterOrder}
               onChange={(e) => setFilterOrder(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-base text-on-surface"
             >
               <option value="">All Orders</option>
               <option value="CORE">Core</option>
@@ -76,17 +107,17 @@ export default function DirectoryPage() {
               <option value="FIRST_TIMERS">First Timers</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="flex flex-col">
+            <label className="font-label text-xs font-bold uppercase tracking-widest text-on-surface-variant mb-2">
               Role
             </label>
             <select
               value={filterRole}
               onChange={(e) => setFilterRole(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="bg-transparent ghost-border focus-border py-2 px-0 font-body text-base text-on-surface"
             >
               <option value="">All Roles</option>
-              <option value="AMBASSADOR">Lasallian Ambassador</option>
+              <option value="AMBASSADOR">Ambassador</option>
               <option value="ASPIRING_CORE">Aspiring Core</option>
               <option value="CORE">Core</option>
             </select>
@@ -94,7 +125,7 @@ export default function DirectoryPage() {
         </div>
         <button
           onClick={fetchAmbassadors}
-          className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+          className="mt-5 bg-primary text-on-primary px-6 py-2 rounded-lg font-headline font-bold uppercase tracking-tight text-sm hover:opacity-90 transition-all"
         >
           Search
         </button>
@@ -102,33 +133,48 @@ export default function DirectoryPage() {
 
       {/* Results */}
       {loading ? (
-        <div className="text-center text-gray-600">Loading...</div>
+        <div className="text-center font-body italic text-on-surface-variant py-12">Loading...</div>
       ) : ambassadors.length === 0 ? (
-        <div className="text-center text-gray-600">No ambassadors found</div>
+        <div className="text-center font-body italic text-on-surface-variant py-12">No ambassadors found.</div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {ambassadors.map((ambassador) => (
-            <Link
-              key={ambassador.id}
-              href={`/dashboard/directory/${ambassador.id}`}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-lg transition p-6 cursor-pointer">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full mb-4"></div>
-                <h3 className="text-lg font-bold text-gray-900">
-                  {ambassador.firstName} {ambassador.lastName}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{ambassador.email}</p>
-                {ambassador.batch && (
-                  <p className="text-xs text-gray-500">Batch: {ambassador.batch}</p>
-                )}
-                {ambassador.order && (
-                  <p className="text-xs text-blue-600 font-medium">
-                    {ambassador.order.replace(/_/g, ' ')}
-                  </p>
-                )}
-              </div>
-            </Link>
-          ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {ambassadors.map((ambassador) => {
+            const committee = ambassador.committee ? COMMITTEE_INFO[ambassador.committee] : null
+            return (
+              <Link key={ambassador.id} href={`/directory/${ambassador.id}`}>
+                <div className="bg-surface-container-lowest rounded-xl editorial-shadow hover:shadow-md transition p-6 cursor-pointer group">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="font-headline font-extrabold text-primary text-lg">
+                        {ambassador.firstName[0]}{ambassador.lastName[0]}
+                      </span>
+                    </div>
+                    {committee && (
+                      <span className={`text-xs font-label font-bold px-2 py-0.5 rounded-full ${committee.bg} ${committee.text}`}>
+                        {committee.label}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="font-headline font-bold text-on-surface group-hover:text-primary transition-colors">
+                    {ambassador.firstName} {ambassador.lastName}
+                  </h3>
+                  <p className="font-body text-xs text-on-surface-variant mb-3 truncate">{ambassador.email}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {ambassador.order && (
+                      <span className="text-xs font-label font-bold text-primary/80 bg-primary/8 px-2 py-0.5 rounded-full">
+                        {ORDER_LABEL[ambassador.order] ?? ambassador.order.replace(/_/g, ' ')}
+                      </span>
+                    )}
+                    {ambassador.batch && (
+                      <span className="text-xs font-label text-on-surface-variant">
+                        Batch {ambassador.batch}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

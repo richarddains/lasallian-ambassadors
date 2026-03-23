@@ -130,7 +130,7 @@ export default function AdminRegistrationsPage() {
                         {reg.event.title}
                       </span>
                       <span className="font-label text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        {reg.volunteerType === 'LAMB' ? 'LAmb' : 'DocuLAmb'}
+                        {reg.volunteerType === 'LAMB' ? 'LAmb' : reg.volunteerType === 'DOCULAMB' ? 'DocuLAmb' : 'Pre-Reg'}
                       </span>
                       <span className="font-label text-[10px] text-slate-400">
                         Signed up {new Date(reg.registeredAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}

@@ -16,21 +16,47 @@ export async function GET(
   }
 
   try {
-    const event = await prisma.event.findUnique({
-      where: { id },
-      include: {
-        aic: { select: { id: true, firstName: true, lastName: true } },
-        _count: { select: { registrations: true } },
-      },
-    })
+    const [event, waitlistedCount, myRegistration] = await Promise.all([
+      prisma.event.findUnique({
+        where: { id },
+        include: {
+          aic: { select: { id: true, firstName: true, lastName: true } },
+          _count: { select: { registrations: true } },
+          registrations: {
+            where: { status: 'APPROVED' },
+            select: {
+              id: true,
+              volunteerType: true,
+              status: true,
+              profile: {
+                select: { id: true, firstName: true, lastName: true, avatarUrl: true },
+              },
+            },
+            orderBy: { approvedAt: 'asc' },
+          },
+        },
+      }),
+      prisma.eventRegistration.count({ where: { eventId: id, status: 'WAITLISTED' } }),
+      prisma.eventRegistration.findUnique({
+        where: { eventId_profileId: { eventId: id, profileId: profile.id } },
+        select: { id: true, status: true, volunteerType: true },
+      }),
+    ])
 
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
+    const lambApproved = event.registrations.filter((r) => r.volunteerType === 'LAMB').length
+    const docuLambApproved = event.registrations.filter((r) => r.volunteerType === 'DOCULAMB').length
+
     return NextResponse.json({
       ...event,
       registrationsCount: event._count.registrations,
+      lambApproved,
+      docuLambApproved,
+      waitlistedCount,
+      myRegistration: myRegistration ?? null,
     })
   } catch (error) {
     return NextResponse.json(
