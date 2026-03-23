@@ -57,7 +57,6 @@ export default async function DashboardPage() {
     slots: e.slots,
     lambSlots: e.lambSlots,
     docuLambSlots: e.docuLambSlots,
-    requiresApproval: e.requiresApproval,
     bannerUrl: e.bannerUrl,
     aicId: e.aicId,
     aic: e.aic,
