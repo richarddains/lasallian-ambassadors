@@ -93,7 +93,6 @@ export default function CreateEventPage() {
 
   const isModule = formData.eventType === 'LAMB_MODULE'
   const isLambEvent = formData.eventType === 'LAMB_EVENT'
-  const needsVolunteerSlots = !isModule && !isLambEvent
 
   return (
     <div className="max-w-2xl">

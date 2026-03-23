@@ -10,13 +10,6 @@ const COMMITTEE_INFO: Record<string, { label: string; bg: string; text: string }
   OPERATIONS_FINANCE: { label: 'OF', bg: 'bg-purple-100', text: 'text-purple-700' },
 }
 
-const COMMITTEE_FULL: Record<string, string> = {
-  MARKETING_RELATIONS: 'Marketing and Relations',
-  HUMAN_RESOURCE: 'Human Resource Management and Development',
-  DOCUMENTATIONS_PUBLICITY: 'Documentations and Publicity',
-  OPERATIONS_FINANCE: 'Operations and Finance',
-}
-
 const ORDER_LABEL: Record<string, string> = {
   CORE: 'Core',
   ASPIRING_CORE: 'Aspiring Core',
