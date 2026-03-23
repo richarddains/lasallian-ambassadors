@@ -15,7 +15,6 @@ interface EventItem {
   slots: number | null
   lambSlots: number | null
   docuLambSlots: number | null
-  requiresApproval: boolean
   registrationsCount: number
   bannerUrl: string | null
   aicId: string | null
